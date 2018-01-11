@@ -10,10 +10,10 @@ class MultiCheckboxField(SelectMultipleField):
   option_widget = widgets.CheckboxInput()
 
 # Config MySQL
-app.config['MYSQL_HOST'] = 'localhost'
-app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = '12345'
-app.config['MYSQL_DB'] = 'flaskapp'
+app.config['MYSQL_DATABASE_HOST'] = 'localhost'
+app.config['MYSQL_DATABASE_USER'] = 'root'
+app.config['MYSQL_DATABASE_PASSWORD'] = '12345'
+app.config['MYSQL_DATABASE_DB'] = 'flaskapp'
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 #init_sql
 mysql = MySQL()
@@ -34,12 +34,12 @@ class RegisterForm(Form):
     first_name = StringField('First Name',[validators.Length(min=1, max=50),validators.DataRequired()])
     middle_name = StringField('Middle Name')
     last_name = StringField('Last Name',[validators.Length(min=1, max=50),validators.DataRequired()])
-    npi = FloatField('NPI',[validators.DataRequired(),validators.DataRequired()])
+    npi = StringField('NPI',[validators.DataRequired(),validators.DataRequired()])
     doctor = SelectField('Doctor',choices=[('a', 'MD/DO'), ('b', 'MBBS'), ('c', 'MBchB'),('d', 'I am not a doctor')])
     radiologist = RadioField('Radiologist',choices=[('yes', 'Radiologist'), ('no', 'Non Radiologist')])
     training = SelectField('Training', choices=[('staff','Staff'),('r0','Resident-R0/PGY 1'),('r1','Resident-R1/PGY 2'),('r2','Resident-R2/PGY 3'),('r3','Resident-R3/PGY 4'),('r4','Resident-R4/PGY 5')])
-    clinical_practice = RadioField('Clinical practice',choices=[('1', '<5 years'),('2', '5-10 years'),('3', '10-15 years'),('4', '15-20 years'),('5', '>20 years')])
-    institution_type = RadioField('Institution type',choices=[('1', 'Private practice'), ('0', 'Academic')])
+    clinical_practice = RadioField('Clinical practice',choices=[('a', '<5 years'),('b', '5-10 years'),('c', '10-15 years'),('d', '15-20 years'),('e', '>20 years')])
+    institution_type = RadioField('Institution type',choices=[('private', 'Private practice'), ('academic', 'Academic')])
     email = StringField('Email', [validators.Length(min=6, max=50)])
     clinical_specality = MultiCheckboxField('Clinical Specality', choices=[('Body_Abdomen','Body/Abdomen'),('Head_Neck','Head and Neck'),('Nuclear_Medicine','Nuclear Medicine'),('MSK','MSK'),('Pediatrics','Pediatrics'),('Breast','Breast'),('Chest_Cardiac','Chest/Cardiac'),('Interventional_Radiology','Interventional Radiology'),('ER_General','ER/General')])
     #password = PasswordField('Password', [validators.DataRequired(),validators.EqualTo('confirm', message='Passwords do not match')])
@@ -68,13 +68,14 @@ def register():
         #specialization = form.specialization.data
 
         # Create cursor
-        cursor = mysql.get_db().cursor()
-
+        #cur = mysql.get_db().cursor()
+        conn = mysql.connect()
+        cur =conn.cursor()
         # Execute query
-        cur.execute("INSERT INTO USERS(first_name,middle_name,last_name,npi,doctor,radiologist,training,clinical_practice,clinical_specality,institution_type,country,state,email) VALUES(%s, %s, %s,%f, %s,%s,%s,%s, %s, %s, %s,%s,%s)", (first_name,middle_name,last_name,npi,doctor,radiologist,training,clinical_practice,clinical_specality,institution_type,country,state,email))
+        cur.execute("INSERT INTO USER(first_name,middle_name,last_name,npi,doctor,radiologist,training,clinical_practice,clinical_specality,institution_type,country,state,email) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)", (first_name,middle_name,last_name,npi,doctor,radiologist,training,clinical_practice,clinical_specality,institution_type,country,state,email))
 
         # Commit to DB
-        mysql.connection.commit()
+        conn.commit()
 
         # Close connection
         cur.close()
