@@ -1,5 +1,5 @@
 from flask import Flask, render_template,flash,redirect,url_for,session,logging,request
-from flask_mysql import MySQL
+from flaskext.mysql import MySQL
 from wtforms import Form, StringField, TextAreaField, PasswordField, validators,SelectField,RadioField,FloatField,SelectMultipleField, widgets
 from passlib.hash import sha256_crypt
 from functools import wraps
@@ -16,8 +16,8 @@ app.config['MYSQL_PASSWORD'] = '12345'
 app.config['MYSQL_DB'] = 'flaskapp'
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 #init_sql
-mysql = MySQL(app)
-
+mysql = MySQL()
+mysql.init_app(app)
 @app.route('/')
 def index():
     return render_template('Home.html')
@@ -68,7 +68,7 @@ def register():
         #specialization = form.specialization.data
 
         # Create cursor
-        cur = mysql.connection.cursor()
+        cursor = mysql.get_db().cursor()
 
         # Execute query
         cur.execute("INSERT INTO USERS(first_name,middle_name,last_name,npi,doctor,radiologist,training,clinical_practice,clinical_specality,institution_type,country,state,email) VALUES(%s, %s, %s,%f, %s,%s,%s,%s, %s, %s, %s,%s,%s)", (first_name,middle_name,last_name,npi,doctor,radiologist,training,clinical_practice,clinical_specality,institution_type,country,state,email))
