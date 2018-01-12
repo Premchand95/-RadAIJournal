@@ -1,9 +1,7 @@
 # Flaskapp
-
-
+```
 Utilities Used:
-
-
+```
 Python 3.6
 
 Mysql
@@ -14,9 +12,9 @@ Command to install python modules:
 
 py -m pip install module_name
 
-
+```
 modules used:
-
+```
 
 
 flask
@@ -30,14 +28,15 @@ wtforms
 functools 
 
 flask_mail
+
 itsdangerous
 
 Example:  py -m pip install flask-mysql
 
 
-
+```
 Database:
-
+```
 CREATE DATABASE flaskapp;
 
 USE flaskapp;
