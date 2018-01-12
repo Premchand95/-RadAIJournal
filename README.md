@@ -29,7 +29,8 @@ wtforms
 
 functools 
 
-
+flask_mail
+itsdangerous
 
 Example:  py -m pip install flask-mysql
 
