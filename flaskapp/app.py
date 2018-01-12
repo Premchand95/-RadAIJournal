@@ -3,18 +3,48 @@ from flaskext.mysql import MySQL
 from wtforms import Form, StringField, TextAreaField, PasswordField, validators,SelectField,RadioField,FloatField,SelectMultipleField, widgets
 from passlib.hash import sha256_crypt
 from functools import wraps
+from flask_mail import Mail, Message
+from itsdangerous import URLSafeTimedSerializer
 app=Flask(__name__)
 
 class MultiCheckboxField(SelectMultipleField):
   widget = widgets.ListWidget(prefix_label=False)
   option_widget = widgets.CheckboxInput()
 
+#config Mail
+app.config['SECRET_KEY'] = 'super-secret'
+app.config['SECURITY_PASSWORD_SALT'] = 'super_secret'
+app.config['MAIL_SERVER']='smtp.gmail.com'
+app.config['MAIL_PORT'] = 465
+app.config['MAIL_USERNAME'] = 'avanigaddaprem@gmail.com'
+app.config['MAIL_PASSWORD'] = 'Prem@1995'
+app.config['MAIL_USE_TLS'] = False
+app.config['MAIL_USE_SSL'] = True
+mail =Mail(app)
 # Config MySQL
 app.config['MYSQL_DATABASE_HOST'] = 'localhost'
 app.config['MYSQL_DATABASE_USER'] = 'root'
 app.config['MYSQL_DATABASE_PASSWORD'] = '12345'
 app.config['MYSQL_DATABASE_DB'] = 'flaskapp'
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
+#mail classes
+def generate_confirmation_token(email):
+    serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
+    return serializer.dumps(email, salt=app.config['SECURITY_PASSWORD_SALT'])
+
+
+def confirm_token(token, expiration=600):
+    serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
+    try:
+        email = serializer.loads(
+            token,
+            salt=app.config['SECURITY_PASSWORD_SALT'],
+            max_age=expiration
+        )
+    except:
+        return False
+    return email
+
 #init_sql
 mysql = MySQL()
 mysql.init_app(app)
@@ -60,10 +90,17 @@ def register():
         training = form.training.data
         clinical_practice = form.clinical_practice.data
         clinical_specality = form.clinical_specality.data
+        clinical_specality = ''.join(clinical_specality)
         institution_type = form.institution_type.data
         country = request.form['country']
         state = request.form['state']
         email = form.email.data
+        token = generate_confirmation_token(email)
+        msg = Message('WELCOME TO FLASK', sender = 'sampleapp@gmail.com', recipients = [email])
+        msg.body = "Hello Flask message sent from Flask-Mail"
+        confirm_url = url_for('confirm_email',token=token,_external=True)
+        msg.html = render_template('activate.html',confirm_url=confirm_url)
+        mail.send(msg)
         #password = sha256_crypt.encrypt(str(form.password.data))
         #specialization = form.specialization.data
 
@@ -79,10 +116,8 @@ def register():
 
         # Close connection
         cur.close()
-
-        flash('You are now registered and can log in', 'success')
-
-        return redirect(url_for('index'))
+        flash('A confirmation email has been sent via email.', 'success')
+        return redirect(url_for("index"))
     return render_template('register.html', form=form)
 # Check if user logged in
 def is_logged_in(f):
@@ -94,7 +129,16 @@ def is_logged_in(f):
             flash('Unauthorized, Please login', 'danger')
             return redirect(url_for('login'))
     return wrap
-
+#email conformation
+@app.route('/confirm/<token>')
+def confirm_email(token):
+    try:
+        email=confirm_token(token)
+    except:
+        flash('Invalid link','danger')
+    else:
+        session['user_email']=email
+        return redirect(url_for('signup'))
 
 # User login
 @app.route('/login', methods=['GET', 'POST'])
@@ -141,6 +185,12 @@ def login():
 def dashboard():
     return render_template('dashboard.html')
 
+@app.route('/signup',methods=['GET', 'POST'])
+def signup():
+    if request.method == 'POST':
+        print("ok")
+    return render_template('signup.html')
+
 
 # Logout
 @app.route('/logout')
@@ -151,4 +201,4 @@ def logout():
 
 if __name__=='__main__':
     app.secret_key='12345'
-    app.run(debug=True)
+    app.run(debug = True)

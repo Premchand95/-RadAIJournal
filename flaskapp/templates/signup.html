@@ -1,0 +1,14 @@
+{% extends 'pagelayout.html' %}
+
+{% block body %}
+  <h1>SIGN UP</h1>
+  {% from "includes/_messages.html" import render_field %}
+  <form action="" method="POST">
+    <div class="form-group">
+      <label>Email</label>
+      <input type="text" name="email" class="form-control" value="{{request.form.email}}">
+    </div>
+    {{request.form.email}}
+    {{session.user_email}}
+    </form>
+{% endblock %}
