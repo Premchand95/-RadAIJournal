@@ -65,16 +65,13 @@ class RegisterForm(Form):
     middle_name = StringField('Middle Name')
     last_name = StringField('Last Name',[validators.Length(min=1, max=50),validators.DataRequired()])
     npi = StringField('NPI',[validators.DataRequired(),validators.DataRequired()])
-    doctor = SelectField('Doctor',choices=[('a', 'MD/DO'), ('b', 'MBBS'), ('c', 'MBchB'),('d', 'I am not a doctor')])
-    radiologist = RadioField('Radiologist',choices=[('yes', 'Radiologist'), ('no', 'Non Radiologist')])
+    #doctor = SelectField('Doctor',choices=[('a', 'MD/DO'), ('b', 'MBBS'), ('c', 'MBchB'),('d', 'I am not a doctor')])
+    #radiologist = RadioField('Radiologist',choices=[('yes', 'Radiologist'), ('no', 'Non Radiologist')])
     training = SelectField('Training', choices=[('staff','Staff'),('r0','Resident-R0/PGY 1'),('r1','Resident-R1/PGY 2'),('r2','Resident-R2/PGY 3'),('r3','Resident-R3/PGY 4'),('r4','Resident-R4/PGY 5')])
     clinical_practice = RadioField('Clinical practice',choices=[('a', '<5 years'),('b', '5-10 years'),('c', '10-15 years'),('d', '15-20 years'),('e', '>20 years')])
     institution_type = RadioField('Institution type',choices=[('private', 'Private practice'), ('academic', 'Academic')])
     email = StringField('Email', [validators.Length(min=6, max=50)])
     clinical_specality = MultiCheckboxField('Clinical Specality', choices=[('Body_Abdomen','Body/Abdomen'),('Head_Neck','Head and Neck'),('Nuclear_Medicine','Nuclear Medicine'),('MSK','MSK'),('Pediatrics','Pediatrics'),('Breast','Breast'),('Chest_Cardiac','Chest/Cardiac'),('Interventional_Radiology','Interventional Radiology'),('ER_General','ER/General')])
-    #password = PasswordField('Password', [validators.DataRequired(),validators.EqualTo('confirm', message='Passwords do not match')])
-    #confirm = PasswordField('Confirm Password')
-
 
 # User Register
 @app.route('/register', methods=['GET', 'POST'])
@@ -85,8 +82,11 @@ def register():
         middle_name = form.middle_name.data
         last_name = form.last_name.data
         npi=form.npi.data
-        doctor = form.doctor.data
-        radiologist = form.radiologist.data
+        doctor = request.form['doctor']
+        print(doctor)
+        session['dummy']=doctor
+        #radiologist = form.radiologist.data
+        radiologist = request.form['radiologist']
         training = form.training.data
         clinical_practice = form.clinical_practice.data
         clinical_specality = form.clinical_specality.data
@@ -123,11 +123,12 @@ def register():
 def is_logged_in(f):
     @wraps(f)
     def wrap(*args, **kwargs):
-        if 'logged_in' in session:
+        print(session)
+        if 'user_email' in session:
             return f(*args, **kwargs)
         else:
-            flash('Unauthorized, Please login', 'danger')
-            return redirect(url_for('login'))
+            flash('Unauthorized, Please register and Confrim your email', 'danger')
+            return redirect(url_for('register'))
     return wrap
 #email conformation
 @app.route('/confirm/<token>')
@@ -140,45 +141,6 @@ def confirm_email(token):
         session['user_email']=email
         return redirect(url_for('signup'))
 
-# User login
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        # Get Form Fields
-        username = request.form['username']
-        password_candidate = request.form['password']
-
-        # Create cursor
-        cur = mysql.connection.cursor()
-
-        # Get user by username
-        result= cur.execute("SELECT * FROM USERS WHERE username = %s", [username])
-
-        if result > 0:
-            # Get stored hash
-            data = cur.fetchone()
-            password = data['password']
-            name=data['name']
-
-            # Compare Passwords
-            if sha256_crypt.verify(password_candidate, password):
-                session['logged_in'] = True
-                session['username'] = username
-                session['name']=name
-                flash('You are now logged in', 'success')
-                return redirect(url_for('dashboard'))
-            else:
-                error = 'Incorrect Password'
-                return render_template('login.html', error=error)
-                # Close connection
-            cur.close()
-        else:
-            error = 'User not found'
-            return render_template('login.html', error=error)
-
-    return render_template('login.html')
-
-
 #dashboard
 @app.route('/dashboard')
 @is_logged_in
@@ -188,7 +150,19 @@ def dashboard():
 @app.route('/signup',methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
-        print("ok")
+        mail=request.form['email']
+        if mail==session['user_email']:
+            return render_template('dashboard.html',data=mail)
+        else:
+            conn = mysql.connect()
+            cur =conn.cursor()
+            # Execute query
+            cur.execute("DELETE FROM USER WHERE email=%s",(session['user_email']))
+            # Commit to DB
+            conn.commit()
+            # Close connection
+            cur.close()
+            flash("Please Register and get conformation mail to acess Dashboard","danger")
     return render_template('signup.html')
 
 
@@ -197,7 +171,7 @@ def signup():
 def logout():
     session.clear()
     flash('You are now logged out', 'success')
-    return redirect(url_for('login'))
+    return redirect(url_for('index'))
 
 if __name__=='__main__':
     app.secret_key='12345'

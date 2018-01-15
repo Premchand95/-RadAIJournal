@@ -18,11 +18,23 @@
       {{render_field(form.npi, class_="form-control")}}<lable style="color:#0C7A15">Must be entered to get your score against the machine</lable>
     </div>
     <div class="form-group">
-      {{render_field(form.doctor, class_="form-control")}}
+      <label>Doctor</label>
+      <select type="text" name="doctor" class="form-control" value={{request.form.doctor}}>
+        <option value="a">MBBS</option>
+        <option value="b">MD/DO</option>
+        <option value="c">MBchB</option>
+        <option value="d">I am not a doctor</option>
+      </select>
     </div>
+    {% if session.dummy|string()!="d" %}
     <div class="form-group">
-      {{render_field(form.radiologist, class_="form-control")}}
+      <label>Radiologist</label>
+      <select type="text" name="radiologist" class="form-control" value={{request.form.radiologist}}>
+        <option value="a">Radiologist</option>
+        <option value="b">Non Radiologist</option>
+      </select>
     </div>
+    {%endif%}
     <div class="form-group">
       {{render_field(form.training, class_="form-control")}}
     </div>
