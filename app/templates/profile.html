@@ -1,0 +1,51 @@
+{% extends "base.html" %} {%block content %}
+<div>
+<h1>Profile</h1>
+<form action="" method="post" class="form form-horizontal">
+    {{ form.hidden_tag() }}
+    <p>
+        {{ form.first_name.label }}<br>
+        {{ form.first_name(size=32) }}
+    </p>
+    <p>
+        {{ form.middle_name.label }}<br>
+        {{ form.middle_name() }}
+    </p>
+    <p>
+        {{ form.last_name.label }}<br>
+        {{ form.last_name(size=32) }}
+    </p>
+    <p>
+        {{ form.npi.label }}<br>
+        {{ form.npi(size=10) }}
+    </p>
+    <p>
+        {{ form.doctor.label }}<br>
+        {{ form.doctor() }}
+    </p>
+    <p>
+        {{ form.radiologist.label }}<br>
+        {{ form.radiologist() }}
+    </p>
+    <p>
+        {{ form.training.label }}<br>
+        {{ form.training() }}
+    </p>
+    <p>
+        {{ form.clinical_practice.label }}<br>
+        {{ form.clinical_practice() }}
+    </p>
+    <p>
+        {{ form.clinical_specality.label }}<br>
+        {{ form.clinical_specality() }}
+    </p>
+    <p>
+        {{ form.institution_type.label }}<br>
+        {{ form.institution_type() }}
+    </p>
+
+    <p>{{ form.submit() }}</p>
+
+</form>
+</div>
+{% endblock %}

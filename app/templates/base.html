@@ -1,0 +1,48 @@
+{% extends "bootstrap/base.html" %}
+
+{% block title %} RadAI - Rads versus machine {% endblock %}
+
+{% import "bootstrap/fixes.html" as fixes %}
+
+{# Then, inside the head block, we apply these. To not replace the header,
+   ``super()`` is used: #}
+{% block head %}
+    {{super()}}
+    {{fixes.ie8()}}
+{%- endblock %}
+
+{% block navbar %}
+<div class="container-fluid">
+      <main role="main" class="col-sm-12 ml-lg-auto col-md-12 pt-3">
+        {% if current_user.is_anonymous %}
+        <nav class="navbar navbar-default">
+          <ul class="nav navbar-nav">
+            <li><a class="navbar-brand" href="/">Home</a> </li>
+            <li><a href="#">About Us</a></li>
+          </ul>
+          <ul class="nav navbar-nav navbar-right list-inline">
+            <li><a href="{{ url_for('login') }}">Login</a></li>
+          </ul>
+        </nav>
+        <!--.navbar navbar-default-->
+
+        {% else %}
+        <nav class="navbar navbar-default">
+          <ul class="nav navbar-nav">
+            <li><a class="navbar-brand" href="/">Home</a> </li>
+            <li><a href="/worklist">Worklist</a></li>
+            <li><a href="/stats">Stats</a></li>
+            <li><a href="/profile">Profile</a></li>
+          </ul>
+          <ul class="nav navbar-default navbar-right">
+            <li>{{current_user.email}} <a href="{{ url_for('logout') }}" class="text-center"> Logout</a> </li>
+          </ul>
+        </nav>
+        <!--.navbar navbar-default-->
+        {% endif %}
+
+      </main>
+      <!-- /.main -->
+</div>
+<!-- /.container-fluid -->
+{% endblock %}

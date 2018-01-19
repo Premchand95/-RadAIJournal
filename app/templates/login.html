@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{%block content %}
+
+ <div class="container-fluid">
+		<main role="main" class="col-sm-12 ml-lg-auto col-md-12 pt-3">
+			   <div class="row">
+                    <h2 class="text-center"> Sign In</h2>
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                    <!-- Categories: success (green), info (blue), warning (yellow), danger (red) -->
+                    {% if messages %}
+                        {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible" role="alert">
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true" style="color:red">&times;</span></button>
+                        <!-- <strong>Title</strong> --> {{ message }}
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                    {% endwith %}
+                </div>
+
+                <div class="row">
+
+                    <form class="form form-horizontal" action="" method="post">
+                        {{form.hidden_tag()}}
+
+                        <p class="text-center">
+                            {{form.email.label}} <br>
+                            {{form.email(size=32)}}
+
+                            {% for error in form.email.errors %}
+                             <span style="color: red;">[{{ error }}]</span>
+                             {% endfor %}
+                        </p>
+                        <p class="text-center">
+                            {{form.password.label}} <br>
+                            {{form.password(size=32)}}
+
+                             {% for error in form.password.errors %}
+                            <span style="color: red;">[{{ error }}]</span>
+                            {% endfor %}
+                        </p>
+                        <p class="text-center">{{form.remember_me()}} {{ form.remember_me.label }} </p>
+                        <p class="text-center">{{form.submit()}} </p>
+                    </form>
+                        <p class="text-center">New User? <a href="{{ url_for('register') }}">Click to Register!</a></p>
+			  </div> <!-- /.row -->
+		  </main>
+  </div> <!-- /.container-fluid -->
+
+
+{% endblock %}
